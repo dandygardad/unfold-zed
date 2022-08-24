@@ -1,0 +1,63 @@
+# ``unfold`` config
+
+# If cls is true then history on command will be erased for neat
+header:
+  cls: true
+
+
+
+# squareSize is the width for one block, value must millimeter unit
+stereoCalibration:
+  squareSize: 25
+
+
+
+# Capture configuration
+capture:
+  # Choose detection mode (live / video)
+  mode: live
+
+  # Choose video file for left camera or right camera (for video mode)
+  # Put the video on "YOUR_UNFOLD_PATH/video" folder
+  cam1: false
+  cam2: false
+
+
+
+# Camera Configuration & Detection
+cameraConfig:
+  resolution: VGA   # HD1080 / HD720 / VGA
+  baseline: 0.12   # Actual distance between two camera (m) - ZED 2 Camera Default
+  
+  # horizontal FOV - follow based from https://support.stereolabs.com/hc/en-us/articles/360007395634-What-is-the-camera-focal-length-and-field-of-view-
+  fieldOfView: 107
+  
+  # Custom only class detect based from model classes (default: false)
+  # Value should be array
+  customModel: false
+
+  # Custom model trained from YOLOv5 (default false)
+  # Put the model on "YOUR_UNFOLD_PATH/models" folder
+  model: false
+  conf: 0.4   # Model confidence 
+  detectRound: 0   # Limit the value on detection (xmin, ymin, xmax, ymax)
+  combinedCamera: false   # Combined left & right camera become 1 frame
+  blockDiffClass: true   # Skip detection if class L/R have a different class
+
+
+
+# Distance Configuration
+distanceConfig:
+  min: 1   # Too close
+  max: 100   # Too far
+
+
+
+# Root mean squared error configuration
+# Used for compile_rmse.py
+rmse:
+  mode: false   # Toggle to enable RMSE mode
+  setDistance: 5   # Set distance for filename
+  maxFramesPerDist: 50  # Many frames to detect
+  strictClass: true   # Error if there's unbalanced classes when compile
+  distRound: 2   # Limit the value of distance
