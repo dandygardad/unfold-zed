@@ -10,6 +10,10 @@ from helper.rmse import *
 
 
 
+print("\n== RESULT OF RMSE (Root Mean Squared Error) ==\n``unfold`` by dandy garda\n")
+
+
+
 ##### LOAD CONFIG FROM changeData #####
 
 f = open('config.yaml')
@@ -51,6 +55,7 @@ dict_rmse_json_one = list(rmse_json_one.keys())
 data[actual_dist[0]] = dict()
 for key in dict_rmse_json_one:
     value, _ = frequencyValue(rmse_json_one[key])
+    print("Jarak yang dominan untuk " + str(key) + ' pada ' + f[0] + ' = ' + str(value))
     data[actual_dist[0]] = {**data[actual_dist[0]], key: value }
 
 for i in range(len(f)):
@@ -75,7 +80,10 @@ for i in range(len(f)):
     data[actual_dist[i]] = {}
     for key in dict_rmse_json:
         value, _ = frequencyValue(rmse_json[key])
-        data[actual_dist[i]] = {**data[actual_dist[0]], key: value}
+        print("Jarak yang dominan untuk " + str(key) + ' pada ' + f[i] + ' = ' + str(value))
+        data[actual_dist[i]] = {**data[actual_dist[i]], key: value}
+
+print()
 
 ##### END OF COMPARE CLASSES START FROM FIRST JSON #####
 
@@ -92,7 +100,7 @@ for dist in data:
     for key in data[dist]:
         result_rmse[key] = 0
         forc_rmse[key] = list()
-
+        
 for dist in data:
     for key in data[dist]:
         forc_rmse[key].append(data[dist][key])
@@ -101,8 +109,9 @@ for arr in forc_rmse:
     rmse = measureRMSE(forc_rmse[arr], actual_dist)
     result_rmse[arr] = rmse
 
+
 # Show result
-print("\n== RESULT OF RMSE (Root Mean Squared Error) ==\n``unfold`` by dandy garda\n")
+print("- Hasil RMSE yang didapatkan -")
 for key in result_rmse:
     print(f"{key} : {result_rmse[key]}")
 
@@ -111,12 +120,12 @@ filename = time.time()
 if not os.path.exists(os.getcwd() + '\\result'):
     os.makedirs('result')
 
-df = pd.DataFrame(result_rmse, index=list(range(len(result_rmse)-1)))
+df = pd.DataFrame(result_rmse, index=[0])
 
 df.to_csv(os.getcwd() + '/result/' + str(int(filename)) + '.csv')
 print("\nSaved result: " + os.getcwd() + '/result/'+ str(int(filename)) + '.csv')
 
-df.to_excel(os.getcwd() + '/result/' + str(int(filename)) + '.xlsx')
+df.to_excel(os.getcwd() + '/result/' + str(int(filename)) + '.xlsx', index=False)
 print("Saved result: " + os.getcwd() + '/result/'+ str(int(filename)) + '.xlsx')
 
 ##### END OF MEASURE RMSE #####
