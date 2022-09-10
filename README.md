@@ -1,7 +1,7 @@
 # ``Unfold for ZED Stereo Camera``
 A Python project for **measuring distance between two ships** with **ZED Stereo Camera**.
 
-Taken from [main repo.](https://github.com/dandygardad/unfold)
+Taken from [previous repo without ZED](https://github.com/dandygardad/unfold).
 
 ## Requirements
 - Python 3.8 or newer
