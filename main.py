@@ -10,7 +10,7 @@ import os
 import pyzed.sl as sl
 
 from helper.general import unfoldHeader, errorMessage, errorDetection
-from helper.load import zedStereo
+from helper.load import zedStereo, stereoCamera
 from helper.distance import convertBbox, stereoscopicMeasurement, bboxLabelDistance
 from helper.rmse import saveData
 
@@ -42,6 +42,11 @@ if dataConfig['cameraConfig']['conf']:
 else:
     conf_custom = 0
 
+if dataConfig['cameraConfig']['iou']:
+    iou_custom = dataConfig['cameraConfig']['iou']
+else:
+    iou_custom = 0
+
 if dataConfig['rmse']['mode']:
     mode_rmse = dataConfig['rmse']['mode']
     dist_rmse = dataConfig['rmse']['setDistance']
@@ -53,6 +58,15 @@ if dataConfig['rmse']['mode']:
 else:
     mode_rmse = False
 
+mode_capture = dataConfig['capture']['mode']
+
+if mode_capture == 'video' and dataConfig['capture']['cam1'] and dataConfig['capture']['cam2']:
+    cam1_capture = dataConfig['capture']['cam1']
+    cam2_capture = dataConfig['capture']['cam2']
+elif mode_capture == 'video':
+    _, _ = errorMessage("Cam 1/Cam 2 source video contains false!")
+    quit()
+
 ###### END OF LOAD YAML ######
 
 
@@ -60,8 +74,14 @@ else:
 
 ###### LOAD STEREO CAMERA ######
 
-print("=== LOAD STEREO CAMERA ===")
-cam, runtime, widthL, heightL, widthR, heightR = zedStereo()
+if mode_capture == 'video':
+    print("=== LOAD VIDEO ===")
+    inputL = os.getcwd() + '\\video\\' + cam1_capture
+    inputR = os.getcwd() + '\\video\\' + cam2_capture
+    camL, camR, widthL, heightL, widthR, heightR = stereoCamera(inputL, inputR, False)
+else:
+    print("=== LOAD STEREO CAMERA ===")
+    cam, runtime, widthL, heightL, widthR, heightR = zedStereo()
     
 # Assume two cameras are same model
 dim = (widthL, heightL)
@@ -100,58 +120,73 @@ while True:
 
     classes = list()
     distances = list()
+
     try:
         ###### STEREO CAMERA & SETTINGS ######
 
-        # Load stereo camera
-        # retL, retR, resized1, resized2, resizedGrayL, resizedGrayR, key = resizedStereoCamera(camL, camR, stereoMapL_x, stereoMapL_y, stereoMapR_x, stereoMapR_y, dim)
-        
-        left_image = sl.Mat()
-        right_image = sl.Mat()
-
         # Inference Settings
         model.conf = conf_custom
+        model.iou = iou_custom
 
         if dataConfig['cameraConfig']['customModel'] != False:
             model.classes = dataConfig['cameraConfig']['customModel']
             
-
         # Load frame to model
-        err = cam.grab(runtime)
-        if err == sl.ERROR_CODE.SUCCESS :
-            cam.retrieve_image(left_image, sl.VIEW.LEFT)
-            result_left = left_image.get_data()
-            
-            cam.retrieve_image(right_image, sl.VIEW.RIGHT)
-            result_right = right_image.get_data()
+        if mode_capture == 'video':
+            retL, result_left = camL.read()
+            retR, result_right = camR.read()
 
-            # Load frame to model
-            resultLR = model([result_left], augment=True)
-            key = cv2.waitKey(10)
+            if retL == False | retR == False:
+                break
+        else:
+            # Load ZED Stereo Camera
+            left_image = sl.Mat()
+            right_image = sl.Mat()
+            err = cam.grab(runtime)
+            if err == sl.ERROR_CODE.SUCCESS :
+                cam.retrieve_image(left_image, sl.VIEW.LEFT)
+                result_left = left_image.get_data()
+                
+                cam.retrieve_image(right_image, sl.VIEW.RIGHT)
+                result_right = right_image.get_data()
+
+            else:
+                errorMessage("Something wrong with ZED Stereo Camera")
+
+        # Convert frame into grayscale
+        frameGrayL = cv2.cvtColor(result_left, cv2.COLOR_BGR2GRAY)
+        frameGrayR = cv2.cvtColor(result_right, cv2.COLOR_BGR2GRAY)
+        
+        # Load frame to model
+        key = cv2.waitKey(10)
+        resultLR = model([frameGrayL], augment=True)
+
+        
 
 
-            ###### MATCH TEMPLATE ######
 
-            labelL = resultLR.pandas().xyxy[0] # (Left Camera)
-            labelR = pd.DataFrame({})
+        ###### MATCH TEMPLATE ######
 
-            for i in range(len(labelL)):
-                image = result_left[int(labelL.iloc[i]['ymin']):int(labelL.iloc[i]['ymax']), int(labelL.iloc[i]['xmin']):int(labelL.iloc[i]['xmax'])]
-                height, width, _ = image.shape[::]
-                match = cv2.matchTemplate(result_right, image, cv2.TM_SQDIFF)
-                _, _, minloc, maxloc = cv2.minMaxLoc(match)
-                data = {
-                    "xmin": float(minloc[0]),
-                    "ymin": float(minloc[1]),
-                    "xmax": float(minloc[0] + width),
-                    "ymax": float(minloc[1] + height),
-                    "confidence": labelL.iloc[i]['confidence'],
-                    "class": labelL.iloc[i]['class'],
-                    "name": labelL.iloc[i]['name']
-                }
-                labelR = pd.concat([labelR, pd.DataFrame(data, index=[i])]) 
-            
-            ###### END OF MATCH TEMPLATE ######
+        labelL = resultLR.pandas().xyxy[0] # (Left Camera)
+        labelR = pd.DataFrame({})
+
+        for i in range(len(labelL)):
+            image = frameGrayL[int(labelL.iloc[i]['ymin']):int(labelL.iloc[i]['ymax']), int(labelL.iloc[i]['xmin']):int(labelL.iloc[i]['xmax'])]
+            height, width = image.shape[::]
+            match = cv2.matchTemplate(frameGrayR, image, cv2.TM_SQDIFF)
+            _, _, minloc, maxloc = cv2.minMaxLoc(match)
+            data = {
+                "xmin": float(minloc[0]),
+                "ymin": float(minloc[1]),
+                "xmax": float(minloc[0] + width),
+                "ymax": float(minloc[1] + height),
+                "confidence": labelL.iloc[i]['confidence'],
+                "class": labelL.iloc[i]['class'],
+                "name": labelL.iloc[i]['name']
+            }
+            labelR = pd.concat([labelR, pd.DataFrame(data, index=[i])]) 
+        
+        ###### END OF MATCH TEMPLATE ######
 
         ###### END OF STEREO CAMERA & SETTINGS ######
 
@@ -188,7 +223,7 @@ while True:
                             print("x2 for right camera = " + str(xr))
 
                             # Result from Distance Measurement
-                            distance = stereoscopicMeasurement(xl, xr, dim[0], dataConfig['cameraConfig']['baseline'], dataConfig['cameraConfig']['fieldOfView'])
+                            distance, disparity = stereoscopicMeasurement(xl, xr, dim[0], dataConfig['cameraConfig']['baseline'], dataConfig['cameraConfig']['fieldOfView'])
                             
                             classes.append(labelL.iloc[id]['name'])
                             distances.append(distance)
@@ -197,7 +232,9 @@ while True:
                             if mode_rmse:
                                 if not labelL.iloc[id]['name'] in result_rmse:
                                     result_rmse[labelL.iloc[id]['name']] = list()
+                                    result_rmse["disp_" + labelL.iloc[id]['name']] = list()
                                 result_rmse[labelL.iloc[id]['name']].append(round(distance, dataConfig['rmse']['distRound']))
+                                result_rmse["disp_" + labelL.iloc[id]['name']].append(round(disparity, dataConfig['rmse']['distRound']))
                         else:
                             resultImgL, resultImgR = errorDetection("Class Left & Right is not same!", result_left, result_right)
                             break
@@ -215,7 +252,9 @@ while True:
                         if mode_rmse:
                             if not labelL.iloc[id]['name'] in result_rmse:
                                 result_rmse[labelL.iloc[id]['name']] = list()
+                                result_rmse["disp_" + labelL.iloc[id]['name']] = list()
                             result_rmse[labelL.iloc[id]['name']].append(distance)
+                            result_rmse["disp_" + labelL.iloc[id]['name']].append(round(disparity, dataConfig['rmse']['distRound']))
 
                     id += 1
                 initial_frame += 1

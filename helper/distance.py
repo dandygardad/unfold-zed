@@ -78,10 +78,17 @@ width = width taken from image dimension (px)
 b = baseline (actual distance between two cameras) (m)
 fov = field of view/lens view angle (two cameras must be of the same model)
 """
+
+# kamera zed (person) - 2.0
+# kamera zed (motorcycle) - 3.0
+# kamera zed (car) - 1.5
 def stereoscopicMeasurement(leftX, rightX, width, b, fov):
     baselineWidth = float(b) * float(width)
-    disparity = abs(float(leftX) - float(rightX))
+    disparity = round(abs(float(leftX) - float(rightX) - 1.5), config['cameraConfig']['detectRound'])
     fieldOfView = float(math.tan(math.radians(fov / 2)))
+    # fieldOfView = 0.9   # HD1080
+    # fieldOfView = 1.15   # HD720
+    # fieldOfView = 1.25   # VGA
 
     print("\nBaseline x width: " + str(baselineWidth))
     print("Disparity: " + str(disparity))
@@ -92,4 +99,4 @@ def stereoscopicMeasurement(leftX, rightX, width, b, fov):
     except ZeroDivisionError:
         distance = 0
         
-    return distance
+    return distance, disparity

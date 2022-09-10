@@ -1,4 +1,4 @@
-# ``unfold`` config
+# ``unfold`` zed stereo config
 
 # If cls is true then history on command will be erased for neat
 header:
@@ -30,7 +30,7 @@ cameraConfig:
   baseline: 0.12   # Actual distance between two camera (m) - ZED 2 Camera Default
   
   # horizontal FOV - follow based from https://support.stereolabs.com/hc/en-us/articles/360007395634-What-is-the-camera-focal-length-and-field-of-view-
-  fieldOfView: 107
+  fieldOfView: 107   # 88 (HD1080), 104 (HD720), 107 (WVGA)
   
   # Custom only class detect based from model classes (default: false)
   # Value should be array
@@ -40,6 +40,7 @@ cameraConfig:
   # Put the model on "YOUR_UNFOLD_PATH/models" folder
   model: false
   conf: 0.4   # Model confidence 
+  iou: 0.45   # Model IoU
   detectRound: 0   # Limit the value on detection (xmin, ymin, xmax, ymax)
   combinedCamera: false   # Combined left & right camera become 1 frame
   blockDiffClass: true   # Skip detection if class L/R have a different class

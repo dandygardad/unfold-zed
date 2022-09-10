@@ -3,6 +3,11 @@
 
 import cv2
 import os
+import yaml
+
+f = open('./config.yaml')
+config = yaml.safe_load(f)
+f.close()
 
 # Header template
 def unfoldHeader(cls):
@@ -25,6 +30,9 @@ def errorMessage(msg):
 
 # Check original dimension
 def originalDimCheck(cam):
+    if config['capture']['mode'] == 'video':
+        return cam.get(cv2.CAP_PROP_FRAME_WIDTH), cam.get(cv2.CAP_PROP_FRAME_HEIGHT), cam.get(cv2.CAP_PROP_FRAME_WIDTH), cam.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
     return round(cam.get_camera_information().camera_resolution.width, 2), round(cam.get_camera_information().camera_resolution.height, 2), round(cam.get_camera_information().camera_resolution.width, 2), round(cam.get_camera_information().camera_resolution.height, 2)
 
 # Template error related from detection
