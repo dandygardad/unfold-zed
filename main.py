@@ -82,6 +82,10 @@ if mode_capture == 'video':
 else:
     print("=== LOAD STEREO CAMERA ===")
     cam, runtime, widthL, heightL, widthR, heightR = zedStereo()
+
+    # Default camera controls for ZED
+    brightness = -1
+    contrast = -1
     
 # Assume two cameras are same model
 dim = (widthL, heightL)
@@ -93,7 +97,7 @@ dim = (widthL, heightL)
 
 ###### LOAD YOLOv5 ######
 
-print("\n\n=== RUNNING YOLOv5 ===")
+print("\n\n=== RUNNING YOLOv5 ===\n")
 try:
     model = torch.hub.load('yolov5-detect', 'custom', path=model_custom, source='local')
 except Exception as e:
@@ -144,6 +148,10 @@ while True:
             right_image = sl.Mat()
             err = cam.grab(runtime)
             if err == sl.ERROR_CODE.SUCCESS :
+                # Set camera brightness and contrast
+                cam.set_camera_settings(sl.VIDEO_SETTINGS.BRIGHTNESS, brightness)
+                cam.set_camera_settings(sl.VIDEO_SETTINGS.CONTRAST, contrast)
+
                 cam.retrieve_image(left_image, sl.VIEW.LEFT)
                 result_left = left_image.get_data()
                 
@@ -161,6 +169,29 @@ while True:
         key = cv2.waitKey(10)
         resultLR = model([frameGrayL], augment=True)
 
+        # Controls to brightness
+        if key == ord(']'):
+            if brightness == 8:
+                print("=== Brightness mencapai maks! ===")
+            else:
+                brightness += 1
+        elif key == ord('['):
+            if brightness == -1:
+                print("=== Brightness dalam mode auto ===")
+            else:
+                brightness -= 1
+
+        # Controls to contrast
+        if key == ord('.'):
+            if contrast == 8:
+                print("=== Contrast mencapai maks! ===")
+            else:
+                contrast += 1
+        elif key == ord(','):
+            if contrast == -1:
+                print("=== Contrast dalam mode auto ===")
+            else:
+                contrast -= 1
         
 
 
@@ -319,4 +350,6 @@ while True:
 
 
 
+
+cv2.destroyAllWindows()
 print("\nThank you!\n:)")

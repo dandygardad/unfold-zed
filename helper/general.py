@@ -21,6 +21,15 @@ def unfoldHeader(cls):
     print('\033[1mgowa, 2022\033[0m')
     print('\n-----------------------------------------------------------------------------\n')
 
+    # Instruction for brightness & contrast
+    print('=== CAMERA CONTROLS FOR BRIGHTNESS & CONTRAST ===')
+    print('\nPress "]" to turn up the brightness.')
+    print('Press "[" to turn down the brightness.\n')
+    print('Press "." to turn up the contrast.')
+    print('Press "," to turn down the contrast.\n')
+
+    input('Press "ENTER" key to continue!\n\n')
+
 
 # Template for error message
 def errorMessage(msg):
