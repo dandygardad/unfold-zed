@@ -26,7 +26,7 @@ python main.py
 
 ## Features
 - Live/Video source input
-- Detect with Stereo YOLOv5 (Mini-version) & Template Matching
+- Detect with YOLOv5 (Mini-version) & Template Matching
 - Distance Measurement
 - Root Mean Squared Error
 
