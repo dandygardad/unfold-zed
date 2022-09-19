@@ -86,6 +86,7 @@ else:
     # Default camera controls for ZED
     brightness = -1
     contrast = -1
+    exposure = -1
     
 # Assume two cameras are same model
 dim = (widthL, heightL)
@@ -151,6 +152,7 @@ while True:
                 # Set camera brightness and contrast
                 cam.set_camera_settings(sl.VIDEO_SETTINGS.BRIGHTNESS, brightness)
                 cam.set_camera_settings(sl.VIDEO_SETTINGS.CONTRAST, contrast)
+                cam.set_camera_settings(sl.VIDEO_SETTINGS.EXPOSURE, exposure)
 
                 cam.retrieve_image(left_image, sl.VIEW.LEFT)
                 result_left = left_image.get_data()
@@ -193,6 +195,21 @@ while True:
             else:
                 contrast -= 1
         
+        # Controls to exposure
+        if key == ord("'"):
+            if exposure == 100:
+                print("=== Exposure mencapai maks!")
+            elif exposure == -1:
+                exposure = 0
+            else:
+                exposure += 10
+        elif key == ord(';'):
+            if exposure == -1:
+                print("=== Exposure dalam mode auto!")
+            elif exposure == 0:
+                exposure = -1
+            else:
+                exposure -= 10
 
 
 

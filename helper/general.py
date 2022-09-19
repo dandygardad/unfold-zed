@@ -27,6 +27,8 @@ def unfoldHeader(cls):
     print('Press "[" to turn down the brightness.\n')
     print('Press "." to turn up the contrast.')
     print('Press "," to turn down the contrast.\n')
+    print('Press', "\"'\"", "to turn up the exposure.")
+    print('Press ";" to turn down the exposure.\n')
 
     input('Press "ENTER" key to continue!\n\n')
 
