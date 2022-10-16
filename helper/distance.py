@@ -89,6 +89,7 @@ def stereoscopicMeasurement(leftX, rightX, width, b, fov):
     # fieldOfView = 0.9   # HD1080
     # fieldOfView = 1.15   # HD720
     # fieldOfView = 1.25   # VGA
+    # + 0.88727
 
     print("\nBaseline x width: " + str(baselineWidth))
     print("Disparity: " + str(disparity))
