@@ -79,6 +79,11 @@ if mode_capture == 'video':
     inputL = os.getcwd() + '\\video\\' + cam1_capture
     inputR = os.getcwd() + '\\video\\' + cam2_capture
     camL, camR, widthL, heightL, widthR, heightR = stereoCamera(inputL, inputR, False)
+
+    # Default camera controls for OpenCV
+    # https://docs.opencv.org/3.4/d3/dc1/tutorial_basic_linear_transform.html
+    alpha = dataConfig['cameraConfig']['contrast'] if dataConfig['cameraConfig']['contrast'] else 1.0   # Contrast 1.0 - 3.0
+    beta = dataConfig['cameraConfig']['brightness'] if dataConfig['cameraConfig']['brightness'] else 0   # Brightness 0 - 100
 else:
     print("=== LOAD STEREO CAMERA ===")
     cam, runtime, widthL, heightL, widthR, heightR = zedStereo()
@@ -143,6 +148,10 @@ while True:
 
             if retL == False | retR == False:
                 break
+            
+            # Converting image to alpha and beta
+            result_left = cv2.convertScaleAbs(result_left, alpha=alpha, beta=beta)
+            result_right = cv2.convertScaleAbs(result_right, alpha=alpha, beta=beta)
         else:
             # Load ZED Stereo Camera
             left_image = sl.Mat()
@@ -171,45 +180,47 @@ while True:
         key = cv2.waitKey(10)
         resultLR = model([frameGrayL], augment=True)
 
-        # Controls to brightness
-        if key == ord(']'):
-            if brightness == 8:
-                print("=== Brightness mencapai maks! ===")
-            else:
-                brightness += 1
-        elif key == ord('['):
-            if brightness == -1:
-                print("=== Brightness dalam mode auto ===")
-            else:
-                brightness -= 1
+        # This controls at this time only available for ZED Stereo Camera
+        if mode_capture == 'live':
+            # Controls to brightness
+            if key == ord(']'):
+                if brightness == 8:
+                    print("=== Brightness mencapai maks! ===")
+                else:
+                    brightness += 1
+            elif key == ord('['):
+                if brightness == -1:
+                    print("=== Brightness dalam mode auto ===")
+                else:
+                    brightness -= 1
 
-        # Controls to contrast
-        if key == ord('.'):
-            if contrast == 8:
-                print("=== Contrast mencapai maks! ===")
-            else:
-                contrast += 1
-        elif key == ord(','):
-            if contrast == -1:
-                print("=== Contrast dalam mode auto ===")
-            else:
-                contrast -= 1
-        
-        # Controls to exposure
-        if key == ord("'"):
-            if exposure == 100:
-                print("=== Exposure mencapai maks!")
-            elif exposure == -1:
-                exposure = 0
-            else:
-                exposure += 10
-        elif key == ord(';'):
-            if exposure == -1:
-                print("=== Exposure dalam mode auto!")
-            elif exposure == 0:
-                exposure = -1
-            else:
-                exposure -= 10
+            # Controls to contrast
+            if key == ord('.'):
+                if contrast == 8:
+                    print("=== Contrast mencapai maks! ===")
+                else:
+                    contrast += 1
+            elif key == ord(','):
+                if contrast == -1:
+                    print("=== Contrast dalam mode auto ===")
+                else:
+                    contrast -= 1
+            
+            # Controls to exposure
+            if key == ord("'"):
+                if exposure == 100:
+                    print("=== Exposure mencapai maks!")
+                elif exposure == -1:
+                    exposure = 0
+                else:
+                    exposure += 10
+            elif key == ord(';'):
+                if exposure == -1:
+                    print("=== Exposure dalam mode auto!")
+                elif exposure == 0:
+                    exposure = -1
+                else:
+                    exposure -= 10
 
 
 
