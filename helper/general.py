@@ -22,17 +22,17 @@ def unfoldHeader(cls):
     print('\n-----------------------------------------------------------------------------\n')
 
     # Instruction for brightness & contrast
-    if(config['capture']['mode'] != 'video'):
-        print('=== CAMERA CONTROLS FOR BRIGHTNESS & CONTRAST ===')
-        print('\nPress "]" to turn up the brightness.')
-        print('Press "[" to turn down the brightness.\n')
-        print('Press "." to turn up the contrast.')
-        print('Press "," to turn down the contrast.\n')
+    print('=== CAMERA CONTROLS FOR BRIGHTNESS & CONTRAST ===')
+    print('\nPress "]" to turn up the brightness.')
+    print('Press "[" to turn down the brightness.\n')
+    print('Press "." to turn up the contrast.')
+    print('Press "," to turn down the contrast.\n')
 
+    if(config['capture']['mode'] != 'video'):
         print('Press', "\"'\"", "to turn up the exposure.")
         print('Press ";" to turn down the exposure.\n')
 
-        input('Press "ENTER" key to continue!\n\n')
+    input('Press "ENTER" key to continue!\n\n')
 
 
 # Template for error message

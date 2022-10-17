@@ -376,9 +376,12 @@ while True:
 
         if dataConfig['cameraConfig']['combinedCamera']:
             # Combine two frame into one
-            alpha = 0.5
-            beta = (1.0 - alpha)
-            combineImg = cv2.addWeighted(resultImgR, alpha, resultImgL, beta, 0.0)
+            alphaCombined = 0.5
+            betaCombined = 1.0
+            combineImg = cv2.addWeighted(resultImgR, alphaCombined, resultImgL, betaCombined, 0.0)
+
+            if dataConfig['cameraConfig']['resolution'] == 'HD720' or dataConfig['cameraConfig']['resolution'] == 'HD1080':
+                combineImg = cv2.resize(combineImg, (672, 376))
             cv2.imshow("Combined Cameras", combineImg)
         else:
             if dataConfig['cameraConfig']['resolution'] == 'HD720' or dataConfig['cameraConfig']['resolution'] == 'HD1080':
