@@ -180,7 +180,7 @@ while True:
         key = cv2.waitKey(10)
         resultLR = model([frameGrayL], augment=True)
 
-        # This controls at this time only available for ZED Stereo Camera
+        # Video controls for ZED and OpenCV
         if mode_capture == 'live':
             # Controls to brightness
             if key == ord(']'):
@@ -221,6 +221,36 @@ while True:
                     exposure = -1
                 else:
                     exposure -= 10
+        else:
+            # Controls to brightness
+            if key == ord(']'):
+                if alpha == 3.0:
+                    print("=== Brightness mencapai maks! ===")
+                else:
+                    alpha += 0.5
+                    print(f"Brightness: {alpha}")
+            elif key == ord('['):
+                if alpha == 1.0:
+                    print("=== Brightness dalam mode auto ===")
+                else:
+                    alpha -= 0.5
+                    print(f"Brightness: {alpha}")
+
+            # Controls to contrast
+            if key == ord('.'):
+                if beta == 100:
+                    print("=== Contrast mencapai maks! ===")
+                else:
+                    beta += 10
+                    print(f"Contrast: {beta}")
+            elif key == ord(','):
+                if beta == 0:
+                    print("=== Contrast dalam mode auto ===")
+                else:
+                    beta -= 10
+                    print(f"Contrast: {beta}")
+            
+
 
 
 
