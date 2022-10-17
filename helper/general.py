@@ -15,11 +15,24 @@ def unfoldHeader(cls):
         os.system('cls')
     else:
         print('\n')
-    print('\033[92m``unfold with zed stereo``\033[0m v.1.2.0')
+    print('\033[92m``unfold with zed stereo``\033[0m v.1.3.0')
     print('\033[1mA Python project for measuring distance between two ships with ZED Stereo Camera.\033[0m')
     print('\n\033[1mmade by Dandy Garda\033[0m')
     print('\033[1mgowa, 2022\033[0m')
     print('\n-----------------------------------------------------------------------------\n')
+
+    # Instruction for brightness & contrast
+    print('=== CAMERA CONTROLS FOR BRIGHTNESS & CONTRAST ===')
+    print('\nPress "]" to turn up the brightness.')
+    print('Press "[" to turn down the brightness.\n')
+    print('Press "." to turn up the contrast.')
+    print('Press "," to turn down the contrast.\n')
+
+    if(config['capture']['mode'] != 'video'):
+        print('Press', "\"'\"", "to turn up the exposure.")
+        print('Press ";" to turn down the exposure.\n')
+
+    input('Press "ENTER" key to continue!\n\n')
 
 
 # Template for error message

@@ -79,9 +79,19 @@ if mode_capture == 'video':
     inputL = os.getcwd() + '\\video\\' + cam1_capture
     inputR = os.getcwd() + '\\video\\' + cam2_capture
     camL, camR, widthL, heightL, widthR, heightR = stereoCamera(inputL, inputR, False)
+
+    # Default camera controls for OpenCV
+    # https://docs.opencv.org/3.4/d3/dc1/tutorial_basic_linear_transform.html
+    alpha = dataConfig['cameraConfig']['contrast'] if dataConfig['cameraConfig']['contrast'] else 1.0   # Contrast 1.0 - 3.0
+    beta = dataConfig['cameraConfig']['brightness'] if dataConfig['cameraConfig']['brightness'] else 0   # Brightness 0 - 100
 else:
     print("=== LOAD STEREO CAMERA ===")
     cam, runtime, widthL, heightL, widthR, heightR = zedStereo()
+
+    # Default camera controls for ZED
+    brightness = -1
+    contrast = -1
+    exposure = -1
     
 # Assume two cameras are same model
 dim = (widthL, heightL)
@@ -93,7 +103,7 @@ dim = (widthL, heightL)
 
 ###### LOAD YOLOv5 ######
 
-print("\n\n=== RUNNING YOLOv5 ===")
+print("\n\n=== RUNNING YOLOv5 ===\n")
 try:
     model = torch.hub.load('yolov5-detect', 'custom', path=model_custom, source='local')
 except Exception as e:
@@ -138,12 +148,21 @@ while True:
 
             if retL == False | retR == False:
                 break
+            
+            # Converting image to alpha and beta
+            result_left = cv2.convertScaleAbs(result_left, alpha=alpha, beta=beta)
+            result_right = cv2.convertScaleAbs(result_right, alpha=alpha, beta=beta)
         else:
             # Load ZED Stereo Camera
             left_image = sl.Mat()
             right_image = sl.Mat()
             err = cam.grab(runtime)
             if err == sl.ERROR_CODE.SUCCESS :
+                # Set camera brightness and contrast
+                cam.set_camera_settings(sl.VIDEO_SETTINGS.BRIGHTNESS, brightness)
+                cam.set_camera_settings(sl.VIDEO_SETTINGS.CONTRAST, contrast)
+                cam.set_camera_settings(sl.VIDEO_SETTINGS.EXPOSURE, exposure)
+
                 cam.retrieve_image(left_image, sl.VIEW.LEFT)
                 result_left = left_image.get_data()
                 
@@ -161,7 +180,77 @@ while True:
         key = cv2.waitKey(10)
         resultLR = model([frameGrayL], augment=True)
 
-        
+        # Video controls for ZED and OpenCV
+        if mode_capture == 'live':
+            # Controls to brightness
+            if key == ord(']'):
+                if brightness == 8:
+                    print("=== Brightness mencapai maks! ===")
+                else:
+                    brightness += 1
+            elif key == ord('['):
+                if brightness == -1:
+                    print("=== Brightness dalam mode auto ===")
+                else:
+                    brightness -= 1
+
+            # Controls to contrast
+            if key == ord('.'):
+                if contrast == 8:
+                    print("=== Contrast mencapai maks! ===")
+                else:
+                    contrast += 1
+            elif key == ord(','):
+                if contrast == -1:
+                    print("=== Contrast dalam mode auto ===")
+                else:
+                    contrast -= 1
+            
+            # Controls to exposure
+            if key == ord("'"):
+                if exposure == 100:
+                    print("=== Exposure mencapai maks!")
+                elif exposure == -1:
+                    exposure = 0
+                else:
+                    exposure += 10
+            elif key == ord(';'):
+                if exposure == -1:
+                    print("=== Exposure dalam mode auto!")
+                elif exposure == 0:
+                    exposure = -1
+                else:
+                    exposure -= 10
+        else:
+            # Controls to brightness
+            if key == ord(']'):
+                if alpha == 3.0:
+                    print("=== Brightness mencapai maks! ===")
+                else:
+                    alpha += 0.5
+                    print(f"Brightness: {alpha}")
+            elif key == ord('['):
+                if alpha == 1.0:
+                    print("=== Brightness dalam mode auto ===")
+                else:
+                    alpha -= 0.5
+                    print(f"Brightness: {alpha}")
+
+            # Controls to contrast
+            if key == ord('.'):
+                if beta == 100:
+                    print("=== Contrast mencapai maks! ===")
+                else:
+                    beta += 10
+                    print(f"Contrast: {beta}")
+            elif key == ord(','):
+                if beta == 0:
+                    print("=== Contrast dalam mode auto ===")
+                else:
+                    beta -= 10
+                    print(f"Contrast: {beta}")
+            
+
 
 
 
@@ -287,9 +376,12 @@ while True:
 
         if dataConfig['cameraConfig']['combinedCamera']:
             # Combine two frame into one
-            alpha = 0.5
-            beta = (1.0 - alpha)
-            combineImg = cv2.addWeighted(resultImgR, alpha, resultImgL, beta, 0.0)
+            alphaCombined = 0.5
+            betaCombined = 1.0
+            combineImg = cv2.addWeighted(resultImgR, alphaCombined, resultImgL, betaCombined, 0.0)
+
+            if dataConfig['cameraConfig']['resolution'] == 'HD720' or dataConfig['cameraConfig']['resolution'] == 'HD1080':
+                combineImg = cv2.resize(combineImg, (672, 376))
             cv2.imshow("Combined Cameras", combineImg)
         else:
             if dataConfig['cameraConfig']['resolution'] == 'HD720' or dataConfig['cameraConfig']['resolution'] == 'HD1080':
@@ -319,4 +411,6 @@ while True:
 
 
 
+
+cv2.destroyAllWindows()
 print("\nThank you!\n:)")

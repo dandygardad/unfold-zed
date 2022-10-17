@@ -84,11 +84,12 @@ fov = field of view/lens view angle (two cameras must be of the same model)
 # kamera zed (car) - 1.5
 def stereoscopicMeasurement(leftX, rightX, width, b, fov):
     baselineWidth = float(b) * float(width)
-    disparity = round(abs(float(leftX) - float(rightX) - 1.5), config['cameraConfig']['detectRound'])
+    disparity = round(abs(float(leftX) - float(rightX)), config['cameraConfig']['detectRound'])
     fieldOfView = float(math.tan(math.radians(fov / 2)))
     # fieldOfView = 0.9   # HD1080
     # fieldOfView = 1.15   # HD720
     # fieldOfView = 1.25   # VGA
+    # + 0.88727
 
     print("\nBaseline x width: " + str(baselineWidth))
     print("Disparity: " + str(disparity))

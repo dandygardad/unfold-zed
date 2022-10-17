@@ -45,6 +45,10 @@ cameraConfig:
   combinedCamera: false   # Combined left & right camera become 1 frame
   blockDiffClass: true   # Skip detection if class L/R have a different class
 
+  # Contrast & Brightness for video
+  contrast: 1.0   # Contrast 1.0 - 3.0
+  brightness: 0   # Brightness 0 - 100
+
 
 
 # Distance Configuration
